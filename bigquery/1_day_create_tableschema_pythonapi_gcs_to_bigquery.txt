@@ -1,0 +1,111 @@
+CREATE DATASET-
+
+In BigQuery, you cannot directly create a dataset using an SQL query like you would with tables or views.
+Instead, datasets are created using the BigQuery API, the Cloud Console, or the bq command-line tool.
+
+However, you can create a dataset programmatically using the Python client library or other tools, or manually through the Google Cloud Console.
+
+Python API-
+
+Editor-
+from google.cloud import bigquery
+# Initialize the BigQuery client
+client = bigquery.Client()
+# Define the dataset name
+dataset_id = "project_id.dataset_id"  # Replace with your project and dataset name
+# Create a Dataset reference
+dataset_ref = client.dataset(dataset_id)
+# Define the Dataset configuration (optional)
+dataset = bigquery.Dataset(dataset_ref)
+dataset.location = "US"  # You can set the location (e.g., US or EU)
+# Create the dataset
+dataset = client.create_dataset(dataset)  # This will create the dataset
+print(f"Dataset {dataset_id} created.")
+
+Terminal-
+python3 filename.py
+
+
+
+CREATE TABLE IN DATASET-
+
+SQL query-
+create or replace table dataset_beginner.titanic (
+  PassengerId int64 not null,
+  Survived int64,
+  Pclass int64,
+  Name string,
+  Sex string,
+  Age int64,
+  SibSp int64,
+  Parch int64,
+  Ticket string,
+  Fare float64,
+  Cabin string,
+  Embarked string
+)
+options (
+  description="a table for titanic dataset"
+);
+
+
+
+
+INSERT DATA INTO TABLE-
+
+SQL query-
+insert into dataset_beginner.titanic values (
+1,
+0,
+3,
+"Braund, Mr. Owen Harris",
+"male",
+22,
+1,
+0,
+"A/5 21171",
+7.25,
+null,
+'S');
+
+
+CSV file saved into GCS-
+
+Python API-
+from google.cloud import bigquery
+#create bigquery client
+client = bigquery.Client()
+#Define the table name with dataset and project
+destination_table= "practice-final-007.dataset_beginner.titanic_python_api"
+#Define the job configuration
+job_config = bigquery.LoadJobConfig(
+    schema= [
+        bigquery.SchemaField("PassengerId", "INTEGER"),
+        bigquery.SchemaField("Survived", "INTEGER"),
+        bigquery.SchemaField("Pclass", "INTEGER"),
+        bigquery.SchemaField("Name", "STRING"),
+        bigquery.SchemaField("Sex", "STRING"),
+        bigquery.SchemaField("Age", "FLOAT"),
+        bigquery.SchemaField("SibSp", "INTEGER"),
+        bigquery.SchemaField("Parch", "INTEGER"),
+        bigquery.SchemaField("Ticket", "STRING"),
+        bigquery.SchemaField("Fare", "FLOAT"),
+        bigquery.SchemaField("Cabin", "STRING"),
+        bigquery.SchemaField("Embarked", "STRING"),
+    ],
+    write_disposition = bigquery.WriteDisposition.WRITE_TRUNCATE,
+    source_format=bigquery.SourceFormat.CSV,
+    skip_leading_rows=1
+)
+#Define the uri for the file location
+uri = "gs://beginner_bucket_007/titanic_dataset/Titanic-Dataset.csv"
+#Load the table
+load_job = client.load_table_from_uri(
+    uri,
+    destination_table,
+    job_config=job_config
+)
+load_job.result()
+destination_table = client.get_table(destination_table)
+#print the results
+print("{} table has been created and loaded {} rows".format(table_id, destination_table.num_rows))
